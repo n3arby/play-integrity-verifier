@@ -1,0 +1,52 @@
+{
+  "name": "@n3arby/play-integrity-verifier",
+  "version": "0.1.0",
+  "description": "A TypeScript library for verifying Google Play Integrity API responses",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "package.json"
+  ],
+  "keywords": [
+    "google-play",
+    "play-integrity",
+    "android",
+    "security",
+    "verification",
+    "typescript"
+  ],
+  "author": "n3arby",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/n3arby/play-integrity-verifier.git"
+  },
+  "bugs": {
+    "url": "https://github.com/n3arby/play-integrity-verifier/issues"
+  },
+  "homepage": "https://github.com/n3arby/play-integrity-verifier#readme",
+  "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
+    "prebuild": "npm run clean",
+    "prepublishOnly": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "google-auth-library": "^9.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.1.0",
+    "typescript": "^5.4.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}
