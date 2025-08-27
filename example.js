@@ -1,6 +1,6 @@
 import { verifyPlayIntegrity } from '@n3arby/play-integrity-verifier';
 
-// Example usage of the Play Integrity Verifier
+// Example usage of the Play Integrity Verifier using official Google APIs
 async function example() {
   // This would be the token you receive from your Android app
   const integrityToken = 'eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...'; // Your actual token here

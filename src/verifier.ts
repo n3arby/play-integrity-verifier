@@ -1,5 +1,5 @@
-import { JWT } from 'google-auth-library';
-import axios from 'axios';
+import { GoogleAuth } from 'google-auth-library';
+import { playintegrity_v1 } from '@googleapis/playintegrity';
 
 export interface PlayIntegrityCredentials {
   clientEmail: string;
@@ -44,33 +44,31 @@ export async function verifyPlayIntegrity(
       throw new Error('Expected package name is required');
     }
 
-    // Create JWT client for Google service account
-    const jwtClient = new JWT({
-      email: credentials.clientEmail,
-      key: credentials.privateKey,
+    // Create Google Auth client with service account credentials
+    const auth = new GoogleAuth({
+      credentials: {
+        client_email: credentials.clientEmail,
+        private_key: credentials.privateKey,
+      },
       scopes: ['https://www.googleapis.com/auth/playintegrity'],
     });
 
-    // Get access token
-    const tokens = await jwtClient.authorize();
-    
-    if (!tokens.access_token) {
-      throw new Error('Failed to obtain access token');
-    }
+    // Create Play Integrity API client
+    const playIntegrity = new playintegrity_v1.Playintegrity({
+      auth: auth as any,
+    });
 
-    // Decode the JWS token using Google's endpoint
-    const response = await axios.post(
-      `https://playintegrity.googleapis.com/v1/${expectedPackageName}:decodeIntegrityToken`,
-      {
+    // Decode the integrity token using the official Google API client
+    const response = await playIntegrity.v1.decodeIntegrityToken({
+      packageName: expectedPackageName,
+      requestBody: {
         integrityToken: token,
       },
-      {
-        headers: {
-          'Authorization': `Bearer ${tokens.access_token}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
+    });
+
+    if (!response.data.tokenPayloadExternal) {
+      throw new Error('No token payload received from Play Integrity API');
+    }
 
     const result = response.data.tokenPayloadExternal as PlayIntegrityResponse;
 
@@ -85,8 +83,8 @@ export async function verifyPlayIntegrity(
 
     return result;
   } catch (error) {
-    if (axios.isAxiosError(error)) {
-      throw new Error(`Play Integrity verification failed: ${error.response?.data?.error?.message || error.message}`);
+    if (error instanceof Error) {
+      throw new Error(`Play Integrity verification failed: ${error.message}`);
     }
     throw new Error(`Play Integrity verification failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }

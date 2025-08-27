@@ -1,14 +1,15 @@
 # @n3arby/play-integrity-verifier
 
-A TypeScript library for verifying Google Play Integrity API responses. This package helps you validate the integrity of Android app installations and device authenticity using Google's Play Integrity API.
+A TypeScript library for verifying Google Play Integrity API responses using the official Google APIs client library. This package helps you validate the integrity of Android app installations and device authenticity using Google's Play Integrity API.
 
 ## Features
 
-- 🔐 Verify Play Integrity tokens server-side
+- 🔐 Verify Play Integrity tokens server-side using official Google APIs
 - 📱 Check app integrity and device authenticity
 - 🛡️ Validate app licensing status
 - 🌐 TypeScript support with full type definitions
 - ⚡ Modern async/await API
+- 🏗️ Built on official `@googleapis/playintegrity` library
 
 ## Installation
 
