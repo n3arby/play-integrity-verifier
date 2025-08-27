@@ -13,10 +13,13 @@ MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQC...
 -----END PRIVATE KEY-----`
   };
 
+  // Your app's package name (REQUIRED for verification)
+  const expectedPackageName = 'com.yourcompany.yourapp';
+
   try {
     console.log('Verifying Play Integrity token...');
     
-    const result = await verifyPlayIntegrity(integrityToken, credentials);
+    const result = await verifyPlayIntegrity(integrityToken, credentials, expectedPackageName);
     
     console.log('✅ Verification successful!');
     console.log('\n📱 Request Details:');

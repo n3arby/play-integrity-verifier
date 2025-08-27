@@ -30,13 +30,20 @@ export interface PlayIntegrityResponse {
  * Verifies a Google Play Integrity API response
  * @param token The JWS token from Play Integrity API
  * @param credentials Google service account credentials
+ * @param expectedPackageName The expected package name of your Android app (e.g., 'com.example.myapp')
  * @returns Decoded and verified Play Integrity response
  */
 export async function verifyPlayIntegrity(
   token: string,
-  credentials: PlayIntegrityCredentials
+  credentials: PlayIntegrityCredentials,
+  expectedPackageName: string
 ): Promise<PlayIntegrityResponse> {
   try {
+    // Validate inputs
+    if (!expectedPackageName || expectedPackageName.trim() === '') {
+      throw new Error('Expected package name is required');
+    }
+
     // Create JWT client for Google service account
     const jwtClient = new JWT({
       email: credentials.clientEmail,
@@ -53,7 +60,7 @@ export async function verifyPlayIntegrity(
 
     // Decode the JWS token using Google's endpoint
     const response = await axios.post(
-      'https://playintegrity.googleapis.com/v1:decodeIntegrityToken',
+      `https://playintegrity.googleapis.com/v1/${expectedPackageName}:decodeIntegrityToken`,
       {
         integrityToken: token,
       },
@@ -65,7 +72,18 @@ export async function verifyPlayIntegrity(
       }
     );
 
-    return response.data.tokenPayloadExternal as PlayIntegrityResponse;
+    const result = response.data.tokenPayloadExternal as PlayIntegrityResponse;
+
+    // Validate that the response package name matches expected
+    if (result.appIntegrity?.packageName && result.appIntegrity.packageName !== expectedPackageName) {
+      throw new Error(`Package name mismatch: expected ${expectedPackageName}, got ${result.appIntegrity.packageName}`);
+    }
+
+    if (result.requestDetails?.requestPackageName && result.requestDetails.requestPackageName !== expectedPackageName) {
+      throw new Error(`Request package name mismatch: expected ${expectedPackageName}, got ${result.requestDetails.requestPackageName}`);
+    }
+
+    return result;
   } catch (error) {
     if (axios.isAxiosError(error)) {
       throw new Error(`Play Integrity verification failed: ${error.response?.data?.error?.message || error.message}`);

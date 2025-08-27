@@ -46,6 +46,7 @@ import { verifyPlayIntegrity } from '@n3arby/play-integrity-verifier';
 
 async function verifyToken() {
   const integrityToken = 'YOUR_INTEGRITY_TOKEN_FROM_ANDROID_APP';
+  const expectedPackageName = 'com.yourcompany.yourapp'; // Your app's package name
   
   const credentials = {
     clientEmail: 'your-service-account@project.iam.gserviceaccount.com',
@@ -53,7 +54,7 @@ async function verifyToken() {
   };
 
   try {
-    const result = await verifyPlayIntegrity(integrityToken, credentials);
+    const result = await verifyPlayIntegrity(integrityToken, credentials, expectedPackageName);
     
     console.log('App package name:', result.requestDetails?.requestPackageName);
     console.log('App integrity verdict:', result.appIntegrity?.appRecognitionVerdict);
@@ -82,13 +83,17 @@ const credentials = {
 
 app.post('/verify-integrity', async (req, res) => {
   try {
-    const { integrityToken } = req.body;
+    const { integrityToken, packageName } = req.body;
     
     if (!integrityToken) {
       return res.status(400).json({ error: 'Missing integrity token' });
     }
     
-    const result = await verifyPlayIntegrity(integrityToken, credentials);
+    if (!packageName) {
+      return res.status(400).json({ error: 'Missing package name' });
+    }
+    
+    const result = await verifyPlayIntegrity(integrityToken, credentials, packageName);
     
     // Check if app is recognized and device is authentic
     const isAppLegitimate = result.appIntegrity?.appRecognitionVerdict === 'PLAY_RECOGNIZED';
@@ -118,8 +123,8 @@ const credentials = {
   privateKey: process.env.GOOGLE_PRIVATE_KEY!.replace(/\\n/g, '\n')
 };
 
-async function verify(token: string) {
-  return await verifyPlayIntegrity(token, credentials);
+async function verify(token: string, packageName: string) {
+  return await verifyPlayIntegrity(token, credentials, packageName);
 }
 ```
 
@@ -145,7 +150,7 @@ integrityManager.requestIntegrityToken(integrityTokenRequest)
 
 ## API Reference
 
-### `verifyPlayIntegrity(token, credentials)`
+### `verifyPlayIntegrity(token, credentials, expectedPackageName)`
 
 Verifies a Play Integrity token and returns the decoded response.
 
@@ -153,6 +158,7 @@ Verifies a Play Integrity token and returns the decoded response.
 
 - `token` (string): The integrity token received from the Android app
 - `credentials` (PlayIntegrityCredentials): Google service account credentials
+- `expectedPackageName` (string): The expected package name of your Android app (e.g., 'com.example.myapp')
 
 #### Returns
 
@@ -224,7 +230,8 @@ try {
 2. **Secure credentials**: Store service account keys securely
 3. **Token freshness**: Verify tokens promptly after generation
 4. **Nonce validation**: Always validate the nonce in your server logic
-5. **Package name**: Verify the package name matches your app
+5. **Package name validation**: The library automatically validates that the package name in the token matches your expected package name
+6. **Required package name**: Always provide the expected package name - this is crucial for security as it prevents token replay attacks from other apps
 
 ## License
 
